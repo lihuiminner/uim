@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>UIM开发者</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="./layuiadmin/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="./layuiadmin/style/admin.css" media="all">
+
+    <script>
+        if (window.top !== window.self) { window.top.location = window.location }
+    </script>
+    <script type="text/javascript" src="./js/hex.js"></script>
+    <script type="text/javascript" src="./js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="./js/socket.io.js"></script>
+    <script type="text/javascript" src="./js/uim.js?t=20190621"></script>
+
+
+    <style>
+        .layui-side-menu,
+        .layadmin-pagetabs .layui-tab-title li:after,
+        .layadmin-pagetabs .layui-tab-title li.layui-this:after,
+        .layui-layer-admin .layui-layer-title,
+        .layadmin-side-shrink .layui-side-menu .layui-nav>.layui-nav-item>.layui-nav-child {
+            background-color: #344058 !important;
+        }
+
+        .layui-nav-tree .layui-this,
+        .layui-nav-tree .layui-this>a,
+        .layui-nav-tree .layui-nav-child dd.layui-this,
+        .layui-nav-tree .layui-nav-child dd.layui-this a {
+            background-color: #1E9FFF !important;
+        }
+
+        .layui-layout-admin .layui-logo {
+            background-color: #0085E8 !important;
+        }
+
+        .layui-layout-admin .layui-header {
+            background-color: #1E9FFF;
+        }
+
+        .layui-layout-admin .layui-header a,
+        .layui-layout-admin .layui-header a cite {
+            color: #f8f8f8;
+        }
+
+        .layui-layout-admin .layui-header a:hover {
+            color: #fff;
+        }
+
+        .layui-layout-admin .layui-header .layui-nav .layui-nav-more {
+            border-top-color: #fbfbfb;
+        }
+
+        .layui-layout-admin .layui-header .layui-nav .layui-nav-mored {
+            border-color: transparent;
+            border-bottom-color: #fbfbfb;
+        }
+
+        .layui-layout-admin .layui-header .layui-nav .layui-this:after,
+        .layui-layout-admin .layui-header .layui-nav-bar {
+            background-color: #fff;
+            background-color: rgba(255, 255, 255, .5);
+        }
+
+        .layadmin-pagetabs .layui-tab-title li:after {
+            display: none;
+        }
+    </style>
+    <style>
+        .header_img {
+            height: 26px;
+            width: 26px;
+            border-radius: 50%;
+            /* box-shadow: 0 0 2px lightgrey;
+            background-color: white; */
+            margin-right: 5px;
+        }
+    </style>
+
+</head>
+
+<body class="layui-layout-body" layadmin-themealias="ocean-header">
+
+    <div id="LAY_app">
+        <div class="layui-layout layui-layout-admin">
+            <div class="layui-header">
+                <!-- 头部区域 -->
+                <ul class="layui-nav layui-layout-left">
+                    <li class="layui-nav-item layadmin-flexible" lay-unselect>
+                        <a href="javascript:;" layadmin-event="flexible" title="侧边伸缩">
+                            <i class="layui-icon layui-icon-shrink-right" id="LAY_app_flexible"></i>
+                        </a>
+                    </li>
+                    <!-- <li class="layui-nav-item layui-hide-xs" lay-unselect>
+                        <a href="/" target="_blank" title="前台">
+                            <i class="layui-icon layui-icon-website"></i>
+                        </a>
+                    </li>
+                    <li class="layui-nav-item" lay-unselect>
+                        <a href="javascript:;" layadmin-event="refresh" title="刷新">
+                            <i class="layui-icon layui-icon-refresh-3"></i>
+                        </a>
+                    </li> -->
+                </ul>
+                <ul class="layui-nav layui-layout-right" lay-filter="layadmin-layout-right">
+                    <li class="layui-nav-item layui-hide-xs top-group" lay-unselect>
+                        <a>
+                            <cite>请选择组织机构...</cite>
+                        </a>
+                        <dl class="layui-nav-child">
+                            <dd><a lay-href="set/user/info.html">组织信息</a></dd>
+                            <dd><a href="javascript:;" layadmin-event="select-group">切换组织</a></dd>
+                            <hr>
+                            <dd><a lay-href="group/add-member.html">添加组织成员</a></dd>
+                        </dl>
+                    </li>
+                    <li class="layui-nav-item layui-hide-xs" lay-unselect style="margin-left:15px;">
+                        <input type="text" placeholder="搜索..." autocomplete="off"
+                            class="layui-input layui-input-search " layadmin-event="serach"
+                            lay-action="coding.html?keywords=">
+                    </li>
+                    <li class="layui-nav-item" lay-unselect>
+                        <a lay-href="coding.html" layadmin-event="message" lay-text="消息中心">
+                            <i class="layui-icon layui-icon-notice"></i>
+
+                            <!-- 如果有新消息，则显示小圆点 -->
+                            <span class="layui-badge-dot"></span>
+                        </a>
+                    </li>
+                    <!-- <li class="layui-nav-item layui-hide-xs" lay-unselect>
+                        <a href="javascript:;" layadmin-event="theme">
+                            <i class="layui-icon layui-icon-theme"></i>
+                        </a>
+                    </li> -->
+                    <li class="layui-nav-item layui-hide-xs" lay-unselect>
+                        <a href="javascript:;" layadmin-event="fullscreen">
+                            <i class="layui-icon layui-icon-screen-full"></i>
+                        </a>
+                    </li>
+                    <li class="layui-nav-item" lay-unselect>
+                        <a href="javascript:;" class="real-name">
+                            <img src="./avatar/default.png" class="header_img" />
+                            <cite></cite>
+                        </a>
+                        <dl class="layui-nav-child">
+                            <dd><a lay-href="coding.html?set/user/info.html">基本资料</a></dd>
+                            <dd><a lay-href="coding.html?set/user/password.html">修改密码</a></dd>
+                            <hr>
+                            <dd layadmin-event="logout" style="text-align: center;"><a>退出</a></dd>
+                        </dl>
+                    </li>
+                    <li class="layui-nav-item layui-hide-xs" lay-unselect>
+                        <a href="javascript:;" layadmin-event="theme">
+                            <i class="layui-icon layui-icon-console"></i>
+                            <cite class="socket-status"></cite>
+                        </a>
+                        <!-- <dl class="layui-nav-child">
+                            <dd><a lay-href="set/user/info.html">关闭长连接</a></dd>
+                            <dd><a lay-href="set/user/password.html">自动模式</a></dd>
+                            <hr>
+                            <dd><a lay-href="group/add-member.html">智能调整</a></dd>
+                        </dl> -->
+                    </li>
+
+                    <li class="layui-nav-item layui-hide-xs" lay-unselect>
+                        <a href="javascript:;" layadmin-event="about"><i
+                                class="layui-icon layui-icon-more-vertical"></i></a>
+                    </li>
+                    <li class="layui-nav-item layui-show-xs-inline-block layui-hide-sm" lay-unselect>
+                        <a href="javascript:;" layadmin-event="more"><i
+                                class="layui-icon layui-icon-more-vertical"></i></a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 侧边菜单 -->
+            <div class="layui-side layui-side-menu">
+                <div class="layui-side-scroll">
+                    <div class="layui-logo" lay-href="coding.html?home/console.html">
+                        <span>UIM Developer 1.0</span>
+                    </div>
+
+                    <ul class="layui-nav layui-nav-tree" lay-shrink="all" id="LAY-system-side-menu"
+                        lay-filter="layadmin-system-side-menu">
+                        <li data-name="home" class="layui-nav-item layui-nav-itemed">
+                            <a href="javascript:;" lay-tips="主页" lay-direction="2">
+                                <i class="layui-icon layui-icon-home"></i>
+                                <cite>主页</cite>
+                            </a>
+                            <dl class="layui-nav-child">
+                                <dd data-name="console" class="layui-this">
+                                    <a lay-href="coding.html?home/console.html">控制台</a>
+                                </dd>
+                                <dd data-name="console">
+                                    <a lay-href="coding.html?home/my-todo.html">我的待办</a>
+                                </dd>
+                                <dd data-name="console">
+                                    <a lay-href="coding.html?home/my-zone.html">我的地盘</a>
+                                </dd>
+                                <dd class="layui-nav-itemed">
+                                    <a href="javascript:;">账户信息</a>
+                                    <dl class="layui-nav-child">
+                                        <dd><a lay-href="coding.html?set/user/info.html">基本资料</a></dd>
+                                        <dd><a lay-href="coding.html?set/user/password.html">修改密码</a></dd>
+                                    </dl>
+                                </dd>
+                            </dl>
+                        </li>
+                        <li data-name="group" class="layui-nav-item">
+                            <a href="javascript:;" lay-tips="团队" lay-direction="2">
+                                <i class="layui-icon layui-icon-group"></i>
+                                <cite>团队</cite>
+                            </a>
+                            <dl class="layui-nav-child">
+                                <dd data-name="console">
+                                    <a lay-href="group/index.html">通讯录</a>
+                                </dd>
+                                <dd data-name="console">
+                                    <a lay-href="coding.html?group/group-note.html">团队便签</a>
+                                </dd>
+                                <dd data-name="console">
+                                    <a lay-href="coding.html?group/meeting-record.html">会议记录</a>
+                                </dd>
+                                <dd data-name="console">
+                                    <a lay-href="coding.html?group/work-report.html">工作报告</a>
+                                </dd>
+                            </dl>
+                        </li>
+                        <li data-name="cooperation" class="layui-nav-item">
+                            <a href="javascript:;" lay-tips="协作" lay-direction="2">
+                                <i class="layui-icon layui-icon-component"></i>
+                                <cite>协作</cite>
+                            </a>
+                            <dl class="layui-nav-child">
+                                <dd data-name="button">
+                                    <a lay-href="cooperation/project-list.html">项目</a>
+                                </dd>
+                                <dd data-name="button">
+                                    <a lay-href="cooperation/module-list.html">模块</a>
+                                </dd>
+                                <dd data-name="button">
+                                    <a lay-href="cooperation/task-list.html">任务</a>
+                                </dd>
+                                <dd data-name="button">
+                                    <a lay-href="cooperation/bug-list.html">Bug</a>
+                                </dd>
+                                <dd data-name="button">
+                                    <a lay-href="cooperation/require-list.html">需求</a>
+                                </dd>
+                                <dd data-name="button">
+                                    <a lay-href="cooperation/model-list.html">模型</a>
+                                </dd>
+                                <dd data-name="button">
+                                    <a lay-href="cooperation/api-list.html">API文档</a>
+                                </dd>
+                            </dl>
+                        </li>
+                        <li data-name="config" class="layui-nav-item">
+                            <a href="javascript:;" lay-tips="配置" lay-direction="2">
+                                <i class="layui-icon layui-icon-set"></i>
+                                <cite>配置</cite>
+                            </a>
+                            <dl class="layui-nav-child">
+                                <!-- <dd><a lay-href="configure/param-project-list.html">活动参数</a></dd> -->
+
+                                <dd><a lay-href="configure/role-list.html">角色</a></dd>
+                                <dd><a lay-href="configure/app-list.html">应用</a></dd>
+                                <dd><a lay-href="configure/api-event-list.html">接口事件</a></dd>
+                                <dd><a lay-href="configure/api-event-action-list.html">动作</a></dd>
+                                <dd><a lay-href="configure/power-list.html">权限</a></dd>
+                                <dd><a lay-href="configure/enum-list.html">枚举</a></dd>
+                                <dd><a lay-href="configure/param-list.html">参数</a></dd>
+                                <!-- <dd data-name="content" class="layui-nav-itemed">
+                                    <a href="javascript:;">系统参数</a>
+                                    <dl class="layui-nav-child">
+                                        <dd data-name="list"><a
+                                                lay-href="coding.html?configure/system-param-group.html">组织</a></dd>
+                                        <dd data-name="tags"><a
+                                                lay-href="coding.html?configure/system-param-project.html">项目</a>
+                                        </dd>
+                                        <dd data-name="comment"><a
+                                                lay-href="coding.html?configure/system-param-app.html">应用</a>
+                                        </dd>
+                                    </dl>
+                                </dd> -->
+                            </dl>
+                        </li>
+                        <li data-name="engine" class="layui-nav-item">
+                            <a href="javascript:;" lay-tips="引擎" lay-direction="2">
+                                <i class="layui-icon layui-icon-engine"></i>
+                                <cite>引擎</cite>
+                            </a>
+                            <dl class="layui-nav-child">
+                                <dd class="layui-nav-itemedd">
+                                    <a href="javascript:;">DB Service</a>
+                                    <dl class="layui-nav-child">
+                                        <dd><a lay-href="coding.html?engine/db-redis.html">redis</a></dd>
+                                        <dd><a lay-href="coding.html?engine/db-mariadb.html">mariadb</a></dd>
+                                    </dl>
+                                </dd>
+                                <dd><a lay-href="engine/file.html">File Service</a></dd>
+                                <dd><a lay-href="engine/api.html">API Service</a></dd>
+                                <dd><a lay-href="engine/page.html">Page Service</a></dd>
+                                <dd><a lay-href="engine/socket.html">SOCKET Service</a></dd>
+                            </dl>
+                        </li>
+                        <li data-name="template" class="layui-nav-item">
+                            <a href="javascript:;" lay-tips="模板" lay-direction="2">
+                                <i class="layui-icon layui-icon-template"></i>
+                                <cite>模板</cite>
+                            </a>
+                            <dl class="layui-nav-child">
+                                <dd data-name="index">
+                                    <a lay-href="coding.html?template/index.html">模板管理</a>
+                                </dd>
+                                <dd class="layui-nav-itemed" data-name="content">
+                                    <a href="javascript:;">所有模板</a>
+                                    <dl class="layui-nav-child">
+                                        <dd data-name="sms"><a lay-href="coding.html?template/sms.html">短信模板</a>
+                                        </dd>
+                                        <dd data-name="push"><a lay-href="coding.html?template/push.html">推送模板</a>
+                                        </dd>
+                                        <dd data-name="page"><a lay-href="template/page-list.html">页面模板</a></dd>
+                                        <dd data-name="email"><a lay-href="coding.html?template/email.html">邮件模板</a>
+                                        </dd>
+                                    </dl>
+                                </dd>
+                                <dd><a lay-href="coding.html?template/type.html">模板分类</a></dd>
+                            </dl>
+                        </li>
+                        <li data-name="app" class="layui-nav-item">
+                            <a href="javascript:;" lay-tips="运营" lay-direction="2">
+                                <i class="layui-icon layui-icon-templeate-1"></i>
+                                <cite>运营</cite>
+                            </a>
+                            <dl class="layui-nav-child">
+
+                                <dd data-name="content" class="layui-nav-itemed">
+                                    <a href="javascript:;">内容系统</a>
+                                    <dl class="layui-nav-child">
+                                        <dd data-name="list"><a
+                                                lay-href="coding.html?app/content/article-list.html">文章列表</a></dd>
+                                        <dd data-name="tags"><a
+                                                lay-href="coding.html?app/content/article-category-list.html">分类管理</a>
+                                        </dd>
+                                        <dd data-name="comment"><a
+                                                lay-href="coding.html?app/content/article-comment.html">评论管理</a>
+                                        </dd>
+                                    </dl>
+                                </dd>
+                                <dd data-name="forum" class="layui-nav-itemed">
+                                    <a href="javascript:;">社区系统</a>
+                                    <dl class="layui-nav-child">
+                                        <dd data-name="list"><a lay-href="coding.html?app/forum/list.html">帖子列表</a></dd>
+                                        <dd data-name="replys"><a lay-href="coding.html?app/forum/replys.html">回帖列表</a>
+                                        </dd>
+                                    </dl>
+                                </dd>
+                                <dd>
+                                    <a lay-href="coding.html?app/message/index.html">消息中心</a>
+                                </dd>
+                                <dd data-name="workorder">
+                                    <a lay-href="coding.html?app/workorder/list.html">工单系统</a>
+                                </dd>
+                                <dd data-name="payorder">
+                                    <a lay-href="coding.html?app/payorder/list.html">支付订单</a>
+                                </dd>
+                            </dl>
+                        </li>
+                        <li data-name="user" class="layui-nav-item">
+                            <a href="javascript:;" lay-tips="用户" lay-direction="2">
+                                <i class="layui-icon layui-icon-user"></i>
+                                <cite>用户</cite>
+                            </a>
+                            <dl class="layui-nav-child">
+                                <dd>
+                                    <a lay-href="coding.html?user/project.html">项目管理员</a>
+                                </dd>
+                                <dd>
+                                    <a lay-href="coding.html?user/app.html">应用管理员</a>
+                                </dd>
+                                <dd>
+                                    <a lay-href="coding.html?user/site.html">网站用户</a>
+                                </dd>
+                            </dl>
+                        </li>
+                        <li data-name="monitor" class="layui-nav-item">
+                            <a href="javascript:;" lay-tips="监控" lay-direction="2">
+                                <i class="layui-icon layui-icon-console"></i>
+                                <cite>监控</cite>
+                            </a>
+                            <dl class="layui-nav-child">
+                                <dd class="layui-nav-itemed">
+                                    <a href="javascript:;">访问情况</a>
+                                    <dl class="layui-nav-child">
+                                        <dd><a lay-href="coding.html?monitor/init.html">页面&应用访问</a></dd>
+                                        <dd><a lay-href="coding.html?monitor/file.html">文件服务访问</a></dd>
+                                    </dl>
+                                </dd>
+                                <dd class="layui-nav-itemed">
+                                    <a href="javascript:;">事件触发</a>
+                                    <dl class="layui-nav-child">
+                                        <dd><a lay-href="coding.html?monitor/sms.html">短信发送</a></dd>
+                                        <dd><a lay-href="coding.html?monitor/email.html">邮件发送</a></dd>
+                                        <dd><a lay-href="coding.html?monitor/page.html">页面生成</a></dd>
+                                        <dd><a lay-href="coding.html?monitor/push.html">实时推送</a></dd>
+                                    </dl>
+                                </dd>
+                            </dl>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 页面标签 -->
+            <div class="layadmin-pagetabs" id="LAY_app_tabs">
+                <div class="layui-icon layadmin-tabs-control layui-icon-prev" layadmin-event="leftPage"></div>
+                <div class="layui-icon layadmin-tabs-control layui-icon-next" layadmin-event="rightPage"></div>
+                <div class="layui-icon layadmin-tabs-control layui-icon-down">
+                    <ul class="layui-nav layadmin-tabs-select" lay-filter="layadmin-pagetabs-nav">
+                        <li class="layui-nav-item" lay-unselect>
+                            <a href="javascript:;"></a>
+                            <dl class="layui-nav-child layui-anim-fadein">
+                                <dd layadmin-event="closeThisTabs"><a href="javascript:;">关闭当前标签页</a></dd>
+                                <dd layadmin-event="closeOtherTabs"><a href="javascript:;">关闭其它标签页</a></dd>
+                                <dd layadmin-event="closeAllTabs"><a href="javascript:;">关闭全部标签页</a></dd>
+                            </dl>
+                        </li>
+                    </ul>
+                </div>
+                <div class="layui-tab" lay-unauto lay-allowClose="true" lay-filter="layadmin-layout-tabs">
+                    <ul class="layui-tab-title" id="LAY_app_tabsheader">
+                        <li lay-id="coding.html?home/console.html" lay-attr="coding.html?home/console.html" class="layui-this"><i
+                                class="layui-icon layui-icon-home"></i></li>
+                    </ul>
+                </div>
+            </div>
+
+
+            <!-- 主体内容 -->
+            <div class="layui-body" id="LAY_app_body">
+                <div class="layadmin-tabsbody-item layui-show">
+                    <iframe src="coding.html?home/console.html" frameborder="0" class="layadmin-iframe"></iframe>
+                </div>
+            </div>
+
+            <!-- 辅助元素，一般用于移动设备下遮罩 -->
+            <div class="layadmin-body-shade" layadmin-event="shade"></div>
+        </div>
+    </div>
+
+    <script src="./layuiadmin/layui/layui.js"></script>
+    <script>
+
+        var workspace = {
+            group_id: 0,// 当前工作的组织
+            group_name: '',
+        };
+
+        var select_group = function (group_id, group_name) {
+            layui.admin.events.closeAllTabs();
+            workspace.group_id = group_id;
+            workspace.group_name = group_name;
+            console.log(group_id, group_name);
+            $('.top-group a cite').text(group_name);
+        }
+
+        // todo 将权限作枚举类存到localStorage中，更新权限时按角色下发更新代码
+        // 建议本地型应用使用权限节点作判断，与后端交互的采用api形式判断
+        uim.power = function (apis) {
+            var power_array = apis.split(",");
+            for (var i = 0; i < power_array.length; i++) {
+                var md5_power = uim.MD5(power_array[i]);
+                if (uim.allowApiList.indexOf(md5_power) == -1) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        var api_cache = {};
+
+        uim.init({
+            config: {
+                app_id: 1,
+                socket: {
+                    status_change: function (c, d) {
+                        $('.socket-status').text(d + ' - ' + c);
+                    },
+                    event_notify: function (event_info) {
+                        var event_msg = {
+                            server_socket_online_max: 'SOCKET服务器在线人数告警',
+                            server_api_cpu_max: 'API服务器CPU告警',
+                            server_file_disk_max: 'FILE服务器磁盘用量告警',
+                            project_balance_min: '项目余额告警',
+                        };
+                        if (event_msg[event_info.event_name]) {
+                            var msg = '事件通知:' + event_msg[event_info.event_name];
+                            layer.alert(msg);
+                            uim.utter({ rate: 0.9, text: msg })
+                        } else {
+                            console.log('event_notify:', event_info);
+                            layer.msg('收到未定义事件：' + event_info.event_name)
+                        }
+                    },
+                    error: function () {
+                        // socket_error_then
+                    }
+                    // mode: '',
+
+                },
+                report_error: true, // 自动上报js错误信息
+                api: {
+                    error: function (err) {
+                        layer.alert(err.description)
+                    },
+                    hook: {
+                        'teamwork.project.list.1_0': function (data) {
+                            return api_cache['teamwork.project.list.1_0:' + data.group_id];
+                        },
+                        'deploy.line.list.1_0': function (data) {
+                            return api_cache['deploy.line.list.1_0'];
+                        },
+                    },
+                    cache: {
+                        'teamwork.project.list.1_0': function (input_data, output_data, req_id) {
+                            api_cache['teamwork.project.list.1_0:' + input_data.group_id] = output_data;
+                        },
+                        'deploy.line.list.1_0': function (input_data, output_data, req_id) {
+                            api_cache['deploy.line.list.1_0'] = output_data;
+                        },
+                    },
+                }
+            },
+            success: function () {
+
+                console.log('验证会话成功');
+
+                $('.header_img').attr('src', '//' + uim.session.head_portrait);
+                if (uim.statusBarHeight) {
+                    $('.page-content').css('top', (uim.statusBarHeight + 46) + 'px');
+                    $(document.body).css('padding-top', uim.statusBarHeight + 'px');
+                }
+
+
+                $('.real-name cite').text(uim.session.last_name + ' ' + uim.session.first_name);
+
+
+                layui.config({
+                    base: './layuiadmin/' //静态资源所在路径
+                }).extend({
+                    index: 'lib/index' //主入口模块
+                }).use(['index', 'layer'], function () {
+
+                    //退出
+                    layui.admin.events.logout = function () {
+                        uim.session_clear('/login.html');
+                    };
+                    //安全退出
+                    layui.admin.events['select-group'] = function () {
+
+                        var open_select_group = function () {
+
+                            layer.open({
+                                type: 2
+                                , title: false
+                                , closeBtn: false
+                                , area: ['900px', '600px']
+                                , shade: [0.98, '#CCCCCC']
+                                , id: 'LAY_layuipro'
+                                , btnAlign: 'c'
+                                , moveType: 1 //拖拽模式，0或者1
+                                , content: './home/select-group.html'
+                            });
+                        }
+                        if (workspace.group_id) {
+                            layer.confirm('请确保您当前窗口下的所有工作内容已经保存！现在切换组织吗？', { icon: 3, title: '提示' }, function (index) {
+                                open_select_group()
+
+                                layer.close(index);
+                            });
+                        } else {
+                            open_select_group()
+                        }
+                    };
+                    layui.admin.events['select-group']();
+                });
+            }, error: function () {
+                location = '/login.html'
+                console.log('未登录')
+            },
+
+        });
+
+    </script>
+</body>
+
+</html>

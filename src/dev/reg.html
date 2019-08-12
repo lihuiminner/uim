@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>注册 - UIM开发者</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="./layuiadmin/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="./layuiadmin/style/admin.css" media="all">
+    <link rel="stylesheet" href="./layuiadmin/style/login.css" media="all">
+
+
+    <script type="text/javascript" src="./js/hex.js"></script>
+    <script type="text/javascript" src="./js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="./js/socket.io.js"></script>
+    <script type="text/javascript" src="./js/uim.js?t=20190621"></script>
+</head>
+
+<body>
+
+
+    <div class="layadmin-user-login layadmin-user-display-show" id="LAY-user-login" style="display: none;">
+        <div class="layadmin-user-login-main">
+            <div class="layadmin-user-login-box layadmin-user-login-header">
+                <h2>UIM developer</h2>
+                <p>在线项目开发管理平台</p>
+            </div>
+            <form class="layadmin-user-login-box layadmin-user-login-body layui-form">
+                <div class="layui-form-item">
+                    <label class="layadmin-user-login-icon layui-icon layui-icon-cellphone" for="mobile"></label>
+                    <input type="text" name="cellphone" id="mobile" lay-verify="phone" placeholder="手机"
+                        class="layui-input">
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-row">
+                        <div class="layui-col-xs7">
+                            <label class="layadmin-user-login-icon layui-icon layui-icon-vercode" for="vercode"></label>
+                            <input type="text" name="vercode" id="vercode" lay-verify="required" placeholder="验证码"
+                                class="layui-input">
+                        </div>
+                        <div class="layui-col-xs5">
+                            <div style="margin-left: 10px;">
+                                <button type="button" class="layui-btn layui-btn-primary layui-btn-fluid"
+                                    id="getvercode">获取验证码</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layadmin-user-login-icon layui-icon layui-icon-password" for="pass"></label>
+                    <input type="password" name="pass" id="pass" lay-verify="pass" placeholder="密码" class="layui-input">
+                </div>
+                <div class="layui-form-item">
+                    <label class="layadmin-user-login-icon layui-icon layui-icon-password" for="repass"></label>
+                    <input type="password" name="repass" id="repass" lay-verify="required" placeholder="确认密码"
+                        class="layui-input">
+                </div>
+                <!-- <div class="layui-form-item">
+                    <label class="layadmin-user-login-icon layui-icon layui-icon-username" for="username"></label>
+                    <input type="text" name="username" id="username" lay-verify="nickname" placeholder="登录名 - 实名后可用于登录"
+                        class="layui-input">
+                </div> -->
+                <div class="layui-form-item">
+                    <input type="checkbox" name="agreement" lay-skin="primary" title="同意用户协议" checked>
+                </div>
+                <div class="layui-form-item">
+                    <button class="layui-btn layui-btn-fluid" lay-submit lay-filter="*">注 册</button>
+                </div>
+                <div class="layui-trans layui-form-item layadmin-user-login-other">
+
+                    <a href="login.html" class="layadmin-user-jump-change layadmin-link layui-hide-xs">已有帐号</a>
+                    <a href="login.html"
+                        class="layadmin-user-jump-change layadmin-link layui-hide-sm layui-show-xs-inline-block">登入</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="layui-trans layadmin-user-login-footer">
+            <p>© 2019 <a href="https://uim.site/" target="_blank">uim.site</a></p>
+            <p>
+                <span><a href="https://uim.site/get" target="_blank">私有化部署</a></span>
+                <span><a href="https://uim.site/doc" target="_blank">在线文档</a></span>
+                <span><a href="https://community.uim.site/" target="_blank">前往社区</a></span>
+            </p>
+        </div>
+
+
+    </div>
+
+    <script src="./layuiadmin/layui/layui.js"></script>
+    <script>
+
+        layui.config({
+            base: './layuiadmin/' //静态资源所在路径
+        }).extend({
+            index: 'lib/index' //主入口模块
+        }).use(['index', 'layer', 'form'], function () {
+            var form = layui.form;
+
+
+            uim.init({
+                config: {
+                    app_id: 1,
+                    socket: {
+                        status_change: function (c, d) {
+                            $('.socket-status').text(d + ' - ' + c);
+                        },
+                        event_notify: function (event_info) {
+                            var event_msg = {
+                                server_socket_online_max: 'SOCKET服务器在线人数告警',
+                                server_api_cpu_max: 'API服务器CPU告警',
+                                server_file_disk_max: 'FILE服务器磁盘用量告警',
+                                project_balance_min: '项目余额告警',
+                            };
+                            if (event_msg[event_info.event_name]) {
+                                var msg = '事件通知:' + event_msg[event_info.event_name];
+                                layer.alert(msg);
+                                uim.utter({ rate: 0.9, text: msg })
+                            } else {
+                                console.log('event_notify:', event_info);
+                                layer.msg('收到未定义事件：' + event_info.event_name)
+                            }
+                        },
+                        error: function () {
+                            // socket_error_then
+                        }
+                        // mode: '',
+
+                    },
+                    report_error: true, // 自动上报js错误信息
+                },
+                success: function () {
+                    console.log('已登录');
+                    location = '/index.html'
+                }, error: function () {
+                    console.log('未登录');
+                    $('#getvercode').click(function () {
+                        var btn = $(this), DISABLED = 'layui-btn-disabled';
+                        var countDown = function (seconds) {
+                            if (seconds < 0) {
+                                btn.removeClass(DISABLED).html('获取验证码');
+                            } else {
+                                btn.addClass(DISABLED).html(seconds + '（重新获取）');
+                                setTimeout(function () {
+                                    countDown(seconds - 1)
+                                }, 1000);
+                            }
+                        };
+                        uim.api.emit([{
+                            code: 'user.account.sendMobileCode.1_0',
+                            data: {
+                                mobile: $('#mobile').val(),
+                            },
+                            success: function (data) {
+                                layer.msg('验证码已发送至你的手机，请注意查收', {
+                                    icon: 1
+                                    , shade: 0
+                                });
+                                $('#vercode').data('sn', data.mobile_check_sn).focus();
+                                countDown(60);
+                            },
+                            error: function (err) {
+                                layer.msg(err.description, { icon: 5 });
+                            }
+                        }])
+                    });
+
+                    //表单提交
+                    form.on('submit(*)', function (data) {
+                        if (!$('#vercode').data('sn')) {
+                            layer.msg('请先获取短信码！');
+                        } else if ($('#pass').val() != $('#repass').val()) {
+                            layer.msg('两次密码不一致！');
+                        } else {
+                            if (window.reg_in) return;
+                            window.reg_in = true;
+                            uim.api.emit([{
+                                code: 'user.account.register.1_0',
+                                data: {
+                                    mobile: $('#mobile').val(),
+                                    mobile_check_sn: $('#vercode').data('sn'),
+                                    mobile_check_code: $('#vercode').val(),
+                                    // user_name: $('#username').val(),
+                                    login_password: uim.MD5('login_password_' + $('#pass').val()),
+                                    // role_id: 1,
+                                },
+                                success: function (data) {
+                                    uim.session = data;
+                                    uim.save('session');
+                                    layer.msg('注册成功', { icon: 1 }, function () {
+                                        location = '/index.html'
+                                    });
+                                },
+                                error: function (err) {
+                                    layer.msg(err.description, { icon: 5 });
+                                    window.reg_in = false;
+                                }
+                            }]);
+                        }
+                        return false;
+                    });
+
+                },
+
+            });
+        });
+    </script>
+</body>
+
+</html>
